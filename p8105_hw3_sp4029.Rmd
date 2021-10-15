@@ -1,0 +1,16 @@
+---
+title: "Homework 3"
+author: "Saryu Patel"
+date: "10/15/2021"
+output: github_document
+---
+
+```{r setup, message=FALSE}
+library(tidyverse)
+```
+
+### Problem 1
+
+### Problem 2
+
+### Problem 3
