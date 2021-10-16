@@ -144,6 +144,8 @@ brfss_df %>%
   knitr::kable()
 ```
 
+The number of states that were observed at 7 or more locations increased from 2007 to 2010. CT is the only state that was observed at 7 or more locations in 2007 but not in 2010. 
+
 ```{r message=FALSE}
 excellent_df <- 
   brfss_df %>% 
@@ -157,7 +159,7 @@ Below is a plot showing the average value over time within a state.
 
 ```{r echo=FALSE, warning=FALSE}
 excellent_df %>% 
-  ggplot(aes(x = year, y = avg_value, color = locationabbr)) +
+  ggplot(aes(x = year, y = avg_value, group = locationabbr, color = locationabbr)) +
   geom_line() +
   labs(title = "Average Data Value Over Time by State",
        x = "Year",
@@ -179,3 +181,47 @@ brfss_df %>%
 There appears to be a lower average value for the response "Excellent" in 2006 than there is in 2010. There is a higher density of "Poor" values in 2006 than there is in 2010. 
 
 ### Problem 3
+
+```{r message=FALSE, warning=FALSE}
+accel_df <- 
+  read_csv("data/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(activity_1:activity_1440, 
+               names_to = "min_of_day",
+               values_to = "activity_count") %>% 
+  mutate(min_of_day = str_sub(min_of_day, 10),
+         min_of_day = as.integer(min_of_day),
+         day = forcats::fct_relevel(day, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+
+i = 1
+for (row in accel_df$day) {
+  if (row == "Saturday" || row == "Sunday") {
+    accel_df$type_of_day[i] = "weekend"
+    i = i + 1
+  } else {
+    accel_df$type_of_day[i] = "weekday"
+    i = i + 1
+  }
+}
+```
+
+The resulting dataset has `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. The most important variable is `activity_count`, and the overall mean of this variable is `r round(mean(accel_df$activity_count), 2)`. 
+
+Below is a table summarizing the total activity over each day. 
+
+```{r echo=FALSE, message=FALSE}
+accel_df %>% 
+  group_by(day_id, day) %>% 
+  summarize(total_activity = sum(activity_count)) %>% 
+  knitr::kable()
+```
+
+Fridays, Saturdays, and Sundays tend to have a greater total activity. There are two Saturdays where the total activity is only the total number of minutes in a day. 
+
+```{r}
+accel_df %>% 
+  ggplot(aes(x = min_of_day, y = activity_count, group = day_id, color = day)) +
+  geom_line()
+```
+
+The highest activity counts occur in the evenings, regardless of day. There is some spike in activity in the afternoon on Saturdays and Sundays. Fridays and Sundays have a spike of activity in the morning, with Sunday activity being later in the morning.
