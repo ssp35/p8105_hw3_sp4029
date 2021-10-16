@@ -11,6 +11,77 @@ library(tidyverse)
 
 ### Problem 1
 
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+The `instacart` dataset has `r nrow(instacart)` observations and `r ncol(instacart)` variables. Some key variables are `product_name`, `aisle`, and `department`. Below is a table summarizing the top 10 most frequently bought items in the dataset. 
+
+```{r echo=FALSE}
+instacart %>% 
+  group_by(product_name) %>% 
+  summarize(n_obs = n()) %>% 
+  arrange(desc(n_obs)) %>% 
+  head(10) %>% 
+  knitr::kable()
+```
+
+The most popular department to shop from is the `r instacart %>% group_by(department) %>% summarize(n_obs = n()) %>% arrange(desc(n_obs)) %>% head(1) %>% select(department)` department.
+
+There are `r nrow(instacart %>% select(aisle) %>% unique())` aisles. Below is a table summarizing the top 10 aisles where the most items are ordered from.
+
+```{r echo=FALSE}
+pop_aisles <- 
+  instacart %>% 
+  group_by(aisle) %>% 
+  summarize(n_obs = n()) 
+pop_aisles %>% 
+  arrange(desc(n_obs)) %>% 
+  head(10) %>% 
+  knitr::kable()
+```
+
+Below is a plot that shows the number of items ordered in each aisle, limited to aisles with more than 10000 items ordered. 
+
+```{r echo=FALSE}
+pop_aisles %>% 
+  filter(n_obs > 10000) %>% 
+  mutate(aisle = forcats::fct_reorder(aisle, n_obs, .desc = TRUE)) %>% 
+  ggplot(aes(x = aisle, y = n_obs)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  labs(title = "Number of Items Ordered in the Most Popular Aisles",
+       x = "Aisle",
+       y = "Number of Items") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Below is a table showing the three most popular items in the isles "baking ingredients", "dog food care", and "packaged vegetables fruits".
+
+```{r echo=FALSE, message=FALSE}
+instacart %>% 
+  filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+  group_by(aisle, product_name) %>% 
+  summarize(n_obs = n()) %>% 
+  arrange(desc(n_obs)) %>% 
+  slice(1:3) %>% 
+  knitr::kable()
+```
+
+Below is a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream were ordered on each day of the week.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+instacart %>% 
+  select(product_name, order_dow, order_hour_of_day) %>% 
+  filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+  pivot_wider(names_from = order_dow,
+              values_from = mean_hour) %>% 
+  knitr::kable()
+```
+
+
 ### Problem 2
 
 ### Problem 3
