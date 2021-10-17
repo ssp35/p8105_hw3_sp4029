@@ -81,7 +81,7 @@ Below is a table showing the three most popular items in the isles "baking ingre
 
 ```{r echo=FALSE, message=FALSE}
 instacart %>% 
-  filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
   group_by(aisle, product_name) %>% 
   summarize(n_obs = n()) %>% 
   arrange(desc(n_obs)) %>% 
@@ -89,7 +89,7 @@ instacart %>%
   knitr::kable()
 ```
 
-Light Brown Sugar is the most popular item from the baking ingredients aisle, Organix Dog Food is the most popular item from the dog food care aisle, and Organic Baby Spinach is the most popular item from the packaged vegetables fruits aisle.
+Light Brown Sugar is the most popular item from the baking ingredients aisle, Snack Sticks Chicken & Rice Recipe Dog Treats is the most popular item from the dog food care aisle, and Organic Baby Spinach is the most popular item from the packaged vegetables fruits aisle.
 
 Below is a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream were ordered on each day of the week.
 
@@ -101,7 +101,7 @@ instacart %>%
   summarize(mean_hour = mean(order_hour_of_day)) %>% 
   pivot_wider(names_from = order_dow,
               values_from = mean_hour) %>% 
-  knitr::kable()
+  knitr::kable(digits = 2)
 ```
 
 Apart from day of the week number 5, Pink Lady Apples tend to be bought at a mean time that is earlier than the mean time at which Coffee Ice Creams.
@@ -198,32 +198,24 @@ accel_df <-
                values_to = "activity_count") %>% 
   mutate(min_of_day = str_sub(min_of_day, 10),
          min_of_day = as.integer(min_of_day),
-         day = forcats::fct_relevel(day, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
-
-i = 1
-for (row in accel_df$day) {
-  if (row == "Saturday" || row == "Sunday") {
-    accel_df$type_of_day[i] = "weekend"
-    i = i + 1
-  } else {
-    accel_df$type_of_day[i] = "weekday"
-    i = i + 1
-  }
-}
+         day = forcats::fct_relevel(day, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+         type_of_day = ifelse(day == "Saturday" | day == "Sunday", "weekend", "weekday"))
 ```
 
 The resulting dataset has `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. The most important variable is `activity_count`, and the overall mean of this variable is `r round(mean(accel_df$activity_count), 2)`. 
 
-Below is a table summarizing the total activity over each day. 
+Below is a table summarizing the total activity over each day by week. 
 
 ```{r echo=FALSE, message=FALSE}
 accel_df %>% 
-  group_by(day_id, day) %>% 
+  group_by(week, day) %>% 
   summarize(total_activity = sum(activity_count)) %>% 
+  pivot_wider(names_from = day,
+              values_from = total_activity) %>% 
   knitr::kable()
 ```
 
-Fridays, Saturdays, and Sundays tend to have a greater total activity. There are two Saturdays where the total activity is only the total number of minutes in a day. 
+Fridays, Saturdays, and Sundays tend to have a greater total activity, apart from the last two Saturdays, where the total activity is only the total number of minutes in a day. 
 
 Below is a plot showing the 24-hour activity time courses for each day, with a different color representing each day of the week.
 
